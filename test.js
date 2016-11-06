@@ -1,7 +1,7 @@
 /**
  * Created by ihula on 06.11.16.
  */
-var emitter = new CustomEmitter();
+var emitter = Emitter.getInstance();
 
 emitter.addEvent("event1", Date.now());
 emitter.addEvent("event2", Date.now());

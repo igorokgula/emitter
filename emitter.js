@@ -2,9 +2,11 @@
  * Created by ihula on 06.11.16.
  */
 
-function Emitter() {
+var Emitter = (function () {
 
     const DAY_TO_MILLISECOND = 24 * 60 * 60;
+
+    var instance;
 
     function CustomEmitter() {
         this.events = [];
@@ -50,5 +52,12 @@ function Emitter() {
         }
     };
 
-    return new CustomEmitter();
-}
+    return {
+        getInstance: function () {
+            if (!instance) {
+                instance = new CustomEmitter();
+            }
+            return instance;
+        }
+    };
+})();
