@@ -34,16 +34,14 @@ CustomEmitter.prototype = {
     subscribe: function (eventName, subscriberName, callback, daysToCallbackBeforeEvent) {
         console.log(`subscriber: ${eventName}, ${subscriberName}, ${callback}, ${daysToCallbackBeforeEvent}`);
         var event = this.events.find(event => event.eventName === eventName);
-        if (event) {
-            var subscriber = event.subscribers.find(subscriber => subscriber.subscriberName === subscriberName);
-            if (subscriber) {
-                subscriber.callback = callback;
-                subscriber.daysToCallbackBeforeEvent = daysToCallbackBeforeEvent;
-            } else {
-                event.subscribers.push(new Subscriber(subscriberName, callback, daysToCallbackBeforeEvent));
-            }
-        } else {
+        if (!event)
             throw new Error(`No event present with name \'${eventName}\'`);
+        var subscriber = event.subscribers.find(subscriber => subscriber.subscriberName === subscriberName);
+        if (subscriber) {
+            subscriber.callback = callback;
+            subscriber.daysToCallbackBeforeEvent = daysToCallbackBeforeEvent;
+        } else {
+            event.subscribers.push(new Subscriber(subscriberName, callback, daysToCallbackBeforeEvent));
         }
     },
     unsubscribe: function (eventName, subscriberName) {
