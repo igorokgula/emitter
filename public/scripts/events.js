@@ -3,12 +3,6 @@
  */
 var emitter = Emitter.getInstance();
 
-emitter.addEvent("event1", Date.now());
-emitter.addEvent("event2", Date.now());
-emitter.addEvent("event3", Date.now());
-
-emitter.removeEvent("event2");
-
 class Event extends React.Component {
     render() {
         return(
