@@ -3,6 +3,12 @@
  */
 var emitter = Emitter.getInstance();
 
+emitter.addEvent("event1", Date.now());
+emitter.addEvent("event2", Date.now());
+emitter.addEvent("event3", Date.now());
+
+emitter.removeEvent("event2");
+
 class Event extends React.Component {
     render() {
         return(
@@ -12,6 +18,9 @@ class Event extends React.Component {
                 </div>
                 <div className="my-event-cell">
                     {this.props.date}
+                </div>
+                <div className="my-event-cell">
+                    <button type="button" className="btn btn-danger" onClick={this.props.onEventRemove}>Remove</button>
                 </div>
             </div>
         );
@@ -25,9 +34,10 @@ class EventList extends React.Component {
     }
 
     render() {
+        var listProps = this.props;
         var events = this.props.data.map(function (event) {
             return (
-                <Event eventName={event.eventName} date={event.date} key={event.eventName} />
+                <Event eventName={event.eventName} date={event.date} key={event.eventName} onEventRemove={() => listProps.onEventRemove(event.eventName)}/>
             );
         });
 
@@ -106,15 +116,13 @@ class EventBox extends React.Component {
                 <h1>
                     Events
                 </h1>
-                <EventList data={this.state.data} />
+                <EventList data={this.state.data} onEventRemove={(eventName) => this.handleEventRemove(eventName)}/>
                 <EventForm onEventSubmit={(event) => this.handleEventSubmit(event)}/>
             </div>
         );
     }
 
-    handleEventClick(eventName) {
-        debugger;
-        console.log(eventName);
+    handleEventRemove(eventName) {
         emitter.removeEvent(eventName);
         this.setState({data: emitter.events});
     }
