@@ -4,9 +4,9 @@
 
 var Emitter = (function () {
 
-    const DAY_TO_MILLISECOND = 24 * 60 * 60;
-
     var instance;
+
+    const DAY_TO_MILLISECOND = 24 * 60 * 60;
 
     function CustomEmitter() {
         this.events = [];

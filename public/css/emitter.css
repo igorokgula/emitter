@@ -1,0 +1,18 @@
+.my-event-list {
+    display: table;
+    border: 2px solid #ddd;
+}
+
+.my-event {
+    display: table-row;
+    border: 1px solid #ddd;
+}
+
+.my-event-head {
+    display: table-header-group;
+    border: 1px solid #ddd;
+}
+
+.my-event-cell {
+    display: table-cell;
+}
