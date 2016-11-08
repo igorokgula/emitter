@@ -15,6 +15,7 @@ var Emitter = (function () {
     function Event(eventName, date) {
         this.eventName = eventName;
         this.date = date;
+        this.isMissed = false;
     }
 
     function Subscriber(callback, delay) {
@@ -36,10 +37,6 @@ var Emitter = (function () {
                 throw new Error(`No event present with name \'${eventName}\'`);
             var delay = event.date - Date.now() - daysToCallbackBeforeEvent * DAY_TO_MILLISECOND;
             event.subscriber = new Subscriber(callback, delay);
-
-            // return function unsubscribe() {
-            //     subscribers.splice(subscribers.indexOf(subscriberName), 1);
-            // }
         },
         unsubscribe: function (eventName) {
             var event = this.events.find(event => event.eventName === eventName);

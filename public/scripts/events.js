@@ -5,19 +5,57 @@ var emitter = Emitter.getInstance();
 
 emitter.addEvent("event1", Date.now());
 emitter.addEvent("event2", Date.now());
-emitter.addEvent("event3", Date.now());
-
-emitter.removeEvent("event2");
+emitter.addEvent("event3", Date.now() + 60000);
 
 class Event extends React.Component {
+
+    constructor (props) {
+        super(props);
+        this.state = {actionName: "subscribe"};
+    }
+
+    componentDidMount() {
+        if (Date.now() > this.props.date) {
+            this.refs.eventRemove.disabled = true;
+            this.refs.inputDaysToCallbackBeforeEvent.disabled = true;
+            this.refs.eventAction.disabled = true;
+        }
+    }
+
     render() {
         return(
             <tr>
                 <td>{this.props.eventName}</td>
-                <td>{this.props.date}</td>
-                <td><button type="button" className="btn btn-danger" onClick={this.props.onEventRemove}>Remove</button></td>
+                <td>{new Date(this.props.date).toString()}</td>
+                <td><button ref="eventRemove" type="button" className="btn btn-danger" onClick={() => this.props.onEvent("remove")}>Remove</button></td>
+                <td>
+                    <div className="input-group">
+                        <input ref="inputDaysToCallbackBeforeEvent" type="number" min="0" className="form-control" value={this.state.daysToCallbackBeforeEvent}
+                               onChange={(e) => this.handleChangeDaysToCallbackBeforeEvent(e)} placeholder="Number of days to fire event before defined time"/>
+                        <span className="input-group-btn">
+                            <button ref="eventAction" type="button" className="btn btn-success" onClick={(e) => this.handleEventSubscribe(e)}>{this.state.actionName}</button>
+                        </span>
+                    </div>
+                </td>
             </tr>
         );
+    }
+
+    handleChangeDaysToCallbackBeforeEvent (e) {
+        this.setState({daysToCallbackBeforeEvent: e.target.value});
+    }
+
+    handleEventSubscribe(e) {
+        if (this.state.actionName === "subscribe") {
+            e.target.parentNode.previousSibling.style.display = "none";
+            this.setState({actionName: "unsubscribe"});
+            this.props.onEvent("subscribe", this.state.daysToCallbackBeforeEvent);
+        } else {
+            e.target.parentNode.previousSibling.style.display = "inline-block";
+            this.setState({actionName: "subscribe"});
+            this.props.onEvent("unsubscribe");
+        }
+
     }
 }
 
@@ -31,7 +69,9 @@ class EventList extends React.Component {
         var listProps = this.props;
         var events = this.props.data.map(function (event) {
             return (
-                <Event eventName={event.eventName} date={event.date} key={event.eventName} onEventRemove={() => listProps.onEventRemove(event.eventName)}/>
+                <Event eventName={event.eventName} date={event.date} key={event.eventName}
+                       onEvent={(action, daysToCallbackBeforeEvent) => listProps.onEvent(event.eventName, action, daysToCallbackBeforeEvent)}
+                />
             );
         });
 
@@ -42,6 +82,7 @@ class EventList extends React.Component {
                     <tr>
                         <th>Name</th>
                         <th>Date</th>
+                        <th>Remove</th>
                         <th>Action</th>
                     </tr>
                     </thead>
@@ -119,17 +160,38 @@ class EventBox extends React.Component {
     render() {
         return (
             <div className="my-event-box">
+                <h2>
+                    Missed events:
+                </h2>
+                <EventList data={this.state.data.filter(event => (event.date < Date.now() && event.isMissed))}
+                           onEvent={(eventName, action, daysToCallbackBeforeEvent) => this.handleEvent(eventName, action, daysToCallbackBeforeEvent)} />
                 <h1>
                     Events
                 </h1>
-                <EventList data={this.state.data} onEventRemove={(eventName) => this.handleEventRemove(eventName)}/>
+                <EventList data={this.state.data.filter(event => event.date >= Date.now())} onEvent={(eventName, action, daysToCallbackBeforeEvent) => this.handleEvent(eventName, action, daysToCallbackBeforeEvent)} />
                 <EventForm onEventSubmit={(event) => this.handleEventSubmit(event)}/>
             </div>
         );
     }
 
-    handleEventRemove(eventName) {
-        emitter.removeEvent(eventName);
+    handleEvent(eventName, action, daysToCallbackBeforeEvent) {
+        debugger;
+        switch (action) {
+            case "remove":
+                emitter.removeEvent(eventName);
+                break;
+            case "subscribe":
+                var event = emitter.events.find(event => event.eventName === eventName);
+                event.isMissed = true;
+                emitter.subscribe(eventName, function () {
+                    event.isMissed = false;
+                    console.log(`Event ${eventName} hapened`);
+                }, daysToCallbackBeforeEvent);
+                break;
+            case "unsubscribe":
+                event.isMissed = false;
+                emitter.unsubscribe(eventName);
+        }
         this.setState({data: emitter.events});
     }
 
