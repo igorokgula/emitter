@@ -15,11 +15,9 @@ var Emitter = (function () {
     function Event(eventName, date) {
         this.eventName = eventName;
         this.date = date;
-        this.subscribers = [];
     }
 
-    function Subscriber(subscriberName, callback, delay) {
-        this.subscriberName = subscriberName;
+    function Subscriber(callback, delay) {
         this.timeout = setTimeout(callback, delay);
     }
 
@@ -29,25 +27,27 @@ var Emitter = (function () {
             this.events.push(new Event(eventName, date));
         },
         removeEvent: function (eventName) {
-            this.events.find(event => event.eventName === eventName).subscribers.forEach(subscriber => this.unsubscribe(eventName, subscriber.name));
+            this.unsubscribe(eventName);
             this.events = this.events.filter(event => event.eventName !== eventName);
         },
-        subscribe: function (eventName, subscriberName, callback, daysToCallbackBeforeEvent) {
+        subscribe: function (eventName, callback, daysToCallbackBeforeEvent) {
             var event = this.events.find(event => event.eventName === eventName);
             if (!event)
                 throw new Error(`No event present with name \'${eventName}\'`);
-            event.subscribers = event.subscribers.filter(subscriber => subscriber.subscriberName !== subscriberName);;
             var delay = event.date - Date.now() - daysToCallbackBeforeEvent * DAY_TO_MILLISECOND;
-            event.subscribers.push(new Subscriber(subscriberName, callback, delay));
+            event.subscriber = new Subscriber(callback, delay);
+
+            // return function unsubscribe() {
+            //     subscribers.splice(subscribers.indexOf(subscriberName), 1);
+            // }
         },
-        unsubscribe: function (eventName, subscriberName) {
+        unsubscribe: function (eventName) {
             var event = this.events.find(event => event.eventName === eventName);
             if (event) {
-                var subscriber = event.subscribers.find(subscriber => subscriber.subscriberName === subscriberName);
-                if (subscriber) {
-                    clearTimeout(subscriber.timeout);
+                if (event.subscriber) {
+                    clearTimeout(event.subscriber.timeout);
                 }
-                event.subscribers = event.subscribers.filter(subscriber => subscriber.subscriberName !== subscriberName);
+                event.subscriber = undefined;
             }
         }
     };
