@@ -15,11 +15,12 @@ var Emitter = (function () {
     function Event(eventName, date) {
         this.eventName = eventName;
         this.date = date;
-        this.isMissed = false;
     }
 
-    function Subscriber(callback, delay) {
+    function Subscriber(callback, daysToCallbackBeforeEvent) {
+        var delay = event.date - Date.now() - daysToCallbackBeforeEvent * DAY_TO_MILLISECOND;
         this.timeout = setTimeout(callback, delay);
+        this.daysToCallbackBeforeEvent = daysToCallbackBeforeEvent;
     }
 
     CustomEmitter.prototype = {
@@ -35,8 +36,7 @@ var Emitter = (function () {
             var event = this.events.find(event => event.eventName === eventName);
             if (!event)
                 throw new Error(`No event present with name \'${eventName}\'`);
-            var delay = event.date - Date.now() - daysToCallbackBeforeEvent * DAY_TO_MILLISECOND;
-            event.subscriber = new Subscriber(callback, delay);
+            event.subscriber = new Subscriber(callback,  daysToCallbackBeforeEvent);
         },
         unsubscribe: function (eventName) {
             var event = this.events.find(event => event.eventName === eventName);
